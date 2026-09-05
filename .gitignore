@@ -1,0 +1,12 @@
+node_modules/
+.DS_Store
+*.log
+.env
+.env.*
+.even-t3-bridge/
+config.json
+token
+t3_token
+t3_token_*
+t3_pair_*
+runtime.json
