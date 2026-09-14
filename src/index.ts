@@ -2,8 +2,14 @@ import { execSync } from "node:child_process";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { networkInterfaces } from "node:os";
 import { join } from "node:path";
-import { loadUserFileConfig, parseArgs, resolveEnvironments, RUNTIME_DIR, loadT3Origin, type T3EnvSpec } from "./config.ts";
-import { advertiseLocalT3, discoverTailscaleT3 } from "./discover.ts";
+import { loadUserFileConfig, parseArgs, resolveEnvironments, RUNTIME_DIR, loadT3Origin, loadT3Token, type T3EnvSpec } from "./config.ts";
+import {
+  advertiseLocalT3,
+  discoverTailscaleT3,
+  pairCodeFor,
+  persistDiscoveredToken,
+  redeemPairing,
+} from "./discover.ts";
 import { T3Provider } from "./provider.ts";
 import { startHttpServer } from "./server.ts";
 import { WIRE_PROVIDER } from "./types.ts";
@@ -65,8 +71,18 @@ async function mergeDiscovered(envs: T3EnvSpec[]) {
 }
 
 const file = loadUserFileConfig();
-const config = parseArgs(process.argv.slice(2), file);
+const config = parseArgs(process.argv.slice(2), file, "");
 const origin = loadT3Origin();
+let localToken: string;
+try {
+  localToken = loadT3Token();
+} catch (err) {
+  const code = pairCodeFor("local");
+  if (!code) throw err;
+  localToken = await redeemPairing(origin, code);
+  persistDiscoveredToken("local", localToken);
+}
+config.t3Token = localToken;
 config.environments = resolveEnvironments(file, origin, config.t3Token);
 if (config.tailscale) {
   try {

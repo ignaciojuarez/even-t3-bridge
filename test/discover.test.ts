@@ -1,6 +1,13 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { discoverTailscaleT3, envIdFromDns, firstT3Origin, pairingCredential, parsePeerTargets } from "../src/discover.ts";
+import {
+  discoverTailscaleT3,
+  envIdFromDns,
+  firstT3Origin,
+  pairingCredential,
+  parsePeerTargets,
+  redeemPairing,
+} from "../src/discover.ts";
 
 describe("envIdFromDns", () => {
   it("uses the MagicDNS label", () => {
@@ -95,5 +102,18 @@ describe("pairingCredential", () => {
     assert.equal(pairingCredential("  PAIRCODE1  "), "PAIRCODE1");
     assert.equal(pairingCredential("http://100.64.0.2:3773/pair?token=PAIRCODE1"), "PAIRCODE1");
     assert.equal(pairingCredential("http://192.0.2.10:3773/pair#token=PAIRCODE2"), "PAIRCODE2");
+  });
+});
+
+describe("redeemPairing", () => {
+  it("returns the T3 session from the pairing response", async () => {
+    const fetchImpl = (async (_url: string | URL | Request, init?: RequestInit) => {
+      assert.deepEqual(JSON.parse(String(init?.body)), { credential: "PAIRCODE1" });
+      return new Response(null, {
+        status: 204,
+        headers: { "Set-Cookie": "t3_session_1=session%20token; Path=/; HttpOnly" },
+      });
+    }) as typeof fetch;
+    assert.equal(await redeemPairing("http://127.0.0.1:3773", "PAIRCODE1", fetchImpl), "session token");
   });
 });

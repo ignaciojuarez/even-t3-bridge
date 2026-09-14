@@ -10,7 +10,8 @@
   },
   "scripts": {
     "start": "tsx src/index.ts",
-    "test": "tsx --test test/*.test.ts"
+    "test": "tsx --test test/*.test.ts",
+    "check": "tsc --noEmit && npm test"
   },
   "devDependencies": {
     "@types/node": "^24.3.0",

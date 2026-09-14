@@ -106,7 +106,7 @@ export function loadT3Token(): string {
     if (value) return value;
   }
   throw new Error(
-    `T3 bearer missing. Set T3_TOKEN or write the owner token to ${stored}`,
+    `T3 bearer missing. Set T3_TOKEN, write a bearer to ${stored}, or save a pairing link to ${join(RUNTIME_DIR, "t3_pair_local")}`,
   );
 }
 
@@ -173,7 +173,11 @@ export function loadT3Origin(): string {
   return data.origin.replace(/\/$/, "");
 }
 
-export function parseArgs(argv: string[], file = loadUserFileConfig()): BridgeConfig {
+export function parseArgs(
+  argv: string[],
+  file = loadUserFileConfig(),
+  t3Token = loadT3Token(),
+): BridgeConfig {
   let port = Number(process.env.PORT ?? 3456);
   let token: string | undefined;
   let tailscale = false;
@@ -202,7 +206,7 @@ export function parseArgs(argv: string[], file = loadUserFileConfig()): BridgeCo
     tailscale,
     host,
     name,
-    t3Token: loadT3Token(),
+    t3Token,
     environments: [],
   };
 }
@@ -217,6 +221,7 @@ function printHelp(): void {
   --name, -n       name shown in the Even app
 
 Optional ~/.even-t3-bridge/config.json — see config.example.json
+Local pairing link/code: ~/.even-t3-bridge/t3_pair_local
 Tailscale peers that answer /.well-known/t3/environment are picked up automatically.
 Bearer for a peer: ~/.even-t3-bridge/t3_token_<hostname> (or environments[]).
 Stop stock even-terminal first if it is already on :3456.

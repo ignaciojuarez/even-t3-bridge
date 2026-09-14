@@ -1,6 +1,4 @@
 {
   "defaultProject": "My App",
-  "runtimeMode": "ask",
-  "provider": "cursor",
-  "model": "composer-1.5"
+  "runtimeMode": "ask"
 }

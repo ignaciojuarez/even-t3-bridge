@@ -76,9 +76,10 @@ export async function redeemPairing(
   return decodeURIComponent(match[1]);
 }
 
-function persistDiscoveredToken(id: string, token: string): void {
+export function persistDiscoveredToken(id: string, token: string): void {
   mkdirSync(RUNTIME_DIR, { recursive: true, mode: 0o700 });
-  writeFileSync(join(RUNTIME_DIR, `t3_token_${id}`), `${token}\n`, { mode: 0o600 });
+  const tokenName = id === "local" ? "t3_token" : `t3_token_${id}`;
+  writeFileSync(join(RUNTIME_DIR, tokenName), `${token}\n`, { mode: 0o600 });
   const pairPath = join(RUNTIME_DIR, `t3_pair_${id}`);
   if (existsSync(pairPath)) unlinkSync(pairPath);
 }
